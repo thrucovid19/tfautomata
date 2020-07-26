@@ -56,11 +56,22 @@ jobs:
       - *tf-install
       - run:
          name: apply
-         command: |
-           # Uncomment the line below to allow CircleCI to apply the Terraform
-           # terraform apply -input=false -auto-approve plan.tfplan
-           echo Uncomment line 61 of config.yml to let CircleCI apply the Terraform
+         command: terraform apply -input=false -auto-approve plan.tfplany
       - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
+
+  terraform-destroy-approval:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *tf-install
+      - run:
+         name: destory
+         command: terraform apply -input=false -auto-approve plan.tfplan
+       - persist_to_workspace:
           root: ~/project
           paths:
             - .
@@ -83,3 +94,10 @@ workflows:
         - terraform-apply-approval:
            requires:
              - hold-for-approval
+        - hold-for-destroy-approval:
+           type: approval
+           requires:
+             - terraform-apply-approval
+        - terraform-destory-approval:
+           requires:
+             - hold-for-destroy-approval
