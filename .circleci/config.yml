@@ -70,7 +70,7 @@ jobs:
       - *tf-install
       - run:
          name: destory
-         command: terraform apply -input=false -auto-approve plan.tfplan
+         command: terraform destory -input=false -auto-approve plan.tfplan
        - persist_to_workspace:
           root: ~/project
           paths:
