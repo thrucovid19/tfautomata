@@ -4,28 +4,30 @@
 #
 version: 2
 
+base_image: &base_image
+  hashicorp/terraform:light
+
+working_directory: &working_directory
+  ~/project
+
 defaults: &defaults
     docker:
-      - image: circleci/python:3.6.1
-    working_directory: ~/project
+      - image: *base_image
+    working_directory: *working_directory
     environment:
       TF_IN_AUTOMATION: true
 
-tf-install: &tf-install
+set_terraform_environment: &set_terraform_environment
   run:
-    name: tf-install
-    command: |
-      wget https://releases.hashicorp.com/terraform/0.12.20/terraform_0.12.20_linux_amd64.zip
-      sudo unzip terraform_0.12.20_linux_amd64.zip -d /usr/bin
-      rm terraform_0.12.20_linux_amd64.zip
-      terraform --version
+    name: set terraform environment
+    command: cd ~/project/
 
 jobs:
   terraform-init:
     <<: *defaults
     steps:
       - checkout
-      - *tf-install
+      - *set_terraform_environment
       - run:
           name: init
           command: terraform init -input=false
@@ -39,7 +41,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-      - *tf-install
+      - *set_terraform_environment
       - run:
          name: plan
          command: terraform plan -out=plan.tfplan -input=false
@@ -53,7 +55,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-      - *tf-install
+      - *set_terraform_environment
       - run:
          name: apply
          command: terraform apply -input=false -auto-approve plan.tfplan
@@ -67,7 +69,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-      - *tf-install
+      - *set_terraform_environment
       - run:
          name: destory
          command: terraform destroy -auto-approve
